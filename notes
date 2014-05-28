@@ -1,0 +1,206 @@
+sudo apt-get install dkms build-essential linux-headers-generic
+sudo /etc/init.d/vboxdrv setup
+ sudo apt-get install openssh-server
+ sudo apt-get install emacs24-lucid
+sudo apt-get install tcsh
+sudo apt-get install linux-headers-3.5.0-17-generic
+
+
+Installing LAMP (apache mysql php)
+http://community.linuxmint.com/tutorial/view/486
+sudo apt-get install apache2
+sudo chown mmccoo /var/www
+sudo chown mmccoo /var/www/index.html 
+sudo apt-get install php5 libapache2-mod-php5
+sudo apt-get install mysql-server
+
+mysqladmin -u root password mrroot
+
+sudo emacs /etc/apache2/apache2.conf
+Include the following line at the bottom of the file, save and quit.
+  Include /etc/phpmyadmin/apache.conf
+
+http://localhost/phpmyadmin
+
+mysql -u root  --password=mrroot
+
+mysql -u root -p
+create user 'mmccoo' identified by 'miles';
+create database wordpress;
+GRANT ALL PRIVILEGES ON logger.* TO 'mmccoo'@'localhost';
+ set password for 'mmccoo'@'localhost' = PASSWORD('miles');
+
+mysql -u mmccoo  --password=miles
+
+http://askubuntu.com/questions/101715/resizing-virtual-drive
+VBoxManage modifyhd "path-of-disk-file" --resize 20000
+
+
+sudo mkdir /media/windowsshare
+
+Then edit your /etc/fstab file (with root privileges) to add this line:
+
+//servername/sharename  /media/windowsshare  cifs  guest,uid=1000,iocharset=utf8,codepage=unicode,unicode  0  0
+
+//servername/sharename  /media/windowsshare  cifs  username=msusername,password=mspassword  0  0
+
+/dev/sdb1 /mnt/serial300b ntfs uid-
+
+sudo blkid
+/dev/sda1: UUID="c3aa34ca-d782-4da3-9255-a57a10f638fd" TYPE="ext4" 
+/dev/sda5: UUID="902b7943-a509-407b-9f56-d866defde97c" TYPE="swap" 
+/dev/sdb1: LABEL="serial300b" UUID="BC54A52054A4DF00" TYPE="ntfs" 
+
+# to mount all.
+mount -a
+
+//<ip-address>/Documents/Aly /home/aly/Documents cifs credentials=/root/.credentials,uid=1000,gid=1000,rw,hard,dir_mode=0777,file_mode=0777 0 0
+
+<ip-address>:Documents/Aly/  /home/aly/Documents cifs hard,noperm,nouid,credentials=/root/.credentials,iocharset=utf8,file_mode=0777,dir_mode=0777,nodfs 0 0
+
+rsync --size-only --no-checksum --exclude=torrent --ignore-existing -v --rsh=ssh --recursive miles@nascar:/mnt/bubba/ /media/mmccoo/backup1/
+
+rsync --size-only --exclude=torrent  -v  --recursive /media/nfs/bubba/ /media/usb0/
+
+
+kicad
+sudo apt-get install bzr
+bzr branch lp:kicad
+mkdir kicadbuild
+cd ../kicadbuild/
+sudo apt-get install cmake
+sudo apt-get install freeglut3-dev
+sudo apt-get install wx2.8-headers libwxgtk2.8-0 libwxgtk2.8-dev
+sudo apt-get install swig
+sudo apt-get install python-dev
+sudo apt-get install python3-dev
+
+cmake ../kicad -DKICAD_TESTING_VERSION=1 -DKICAD_SCRIPTING=1  -DCMAKE_VERBOSE_MAKEFILE=ON
+
+change pcbnew/CMakeFiles/pcbnew.dir/link.txt - it wants to use python3.2, but the rest of the build uses 2.7
+
+ make install DESTDIR=`realpath ../kicadinstall`
+
+ sudo add-apt-repository ppa:adamwolf/kicad-scripting-testing-dail
+ sudo apt-get update
+
+I copied the adamwolf entry from /etc/apt/sources.list.d/ dir to the beginning of the main apt-get file. This is to ensure precedence.
+
+sudo apt-get install kicad
+
+when it's done, it should tell you were it got the install. should be adamwolf
+
+
+
+avconv -f video4linux2 -r 25 -i /dev/video0 -f alsa -i plughw:U0x46d0x808,0 -ar 22050 -ab 64k -strict experimental -acodec aac -vcodec mpeg4 -y webcam.mp4
+
+to view
+mplayer webcam.mp4
+
+sudo service minidlna restart
+
+To rebuild the database use:
+
+sudo rm /var/lib/minidlna/files.db 
+sudo service minidlna force-reload
+
+to rip a dvd in ubuntu
+acidrip
+
+
+updates
+sudo apt-get update        # Fetches the list of available updates
+sudo apt-get dist-upgrade  # Installs updates
+sudo apt-get upgrade
+
+obnam backup $HOME
+
+http://kernel.ubuntu.com/~kernel-ppa/mainline/v3.13-rc7-trusty/
+wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v3.12.6-trusty/linux-headers-3.12.6-031206-generic_3.12.6-031206.201312201218_amd64.deb http://kernel.ubuntu.com/~kernel-ppa/mainline/v3.12.6-trusty/linux-headers-3.12.6-031206_3.12.6-031206.201312201218_all.deb http://kernel.ubuntu.com/~kernel-ppa/mainline/v3.12.6-trusty/linux-image-3.12.6-031206-generic_3.12.6-031206.201312201218_amd64.deb
+
+
+sudo dpkg -i linux-headers-3.12.6* linux-image-3.12.6* 
+
+#cache partition
+sudo blockdev --getsize64 /dev/sda3
+31523340288
+# ssd metadata size
+ perl -e "print ((4194304 + (16 * `sudo blockdev --getsize64 /dev/sda3` / 262144))/512)"
+11949.875
+
+sudo dmsetup create ssd-metadata --table '0 11950 linear /dev/sda3 0'
+sudo dd if=/dev/zero of=/dev/mapper/ssd-metadata
+
+perl -e "print (`sudo blockdev --getsize64 /dev/sda3`/512-11950)"
+61557074
+
+sudo dmsetup create ssd-blocks --table '0 61557074 linear /dev/sda3 11950'
+
+sudo dmsetup create cached-disk --table '0 61557074 cache /dev/mapper/ssd-metadata /dev/mapper/ssd-blocks /dev/vg0/spindle 512 1 writeback default 0'
+
+sudo blockdev --getsz /dev/sdb1
+58611097
+6
+sudo dmsetup create cached-300 --table '0 586110976 cache /dev/mapper/ssd-metadata /dev/mapper/ssd-blocks /dev/sdb1 512 1 writeback default 0'
+
+www.acis.ufl.edu/~ming/dmcache -> 586110976
+dmsetup create dmcachehome --table "0 586110976 cache /dev/sdc1 /dev/sdc2 /dev/sda3 512 0 mq 4 sequential_threshold 1024 random_threshold 8"
+
+perl -MCPAN -e "CPAN::Shell->force(qw(install IO::Socket::SSL));"
+
+
+tcptrack -i eth0
+
+https://help.ubuntu.com/community/SettingUpNFSHowTo#NFS_Client
+sudo apt-get install rpcbind nfs-common
+ sudo mount nascar:/mnt/bubba /media/nfs/bubba
+
+# backing device the hard drive
+sudo wipefs -a /dev/sdb1 # remove the superblock.
+sudo make-bcache -B /dev/sdb1
+
+# caching device the ssd
+sudo wipefs -a /dev/sda3
+sudo make-bcache -C /dev/sda3
+
+# the string below come from here /sys/fs/bcache/
+ echo 7e17561d-b0c2-4a02-b390-f0e772cdea9b | sudo tee  /sys/block/bcache0/bcache/attach 
+
+2048 586113023
+
+Model: ATA Maxtor 6V300F0 (scsi)
+Disk /dev/sdb: 586114704s
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+
+Number  Start  End         Size        Type     File system  Flags
+ 1      2048s  586113023s  586110976s  primary
+
+
+
+to auto mount
+sudo blkid
+
+to get UUIDs
+
+edit /etc/fstab
+
+
+bittorrent
+deluged  # start daemon
+deluge-web # web server
+http://localhost:8112/ # pw is deluge
+
+
+3 to get a nice list of disks
+sudo lsblk
+
+
+
+sudo apt-get install mtpfs
+sudo mkdir /media/MTPdevice
+sudo chmod 775 /media/MTPdevice
+sudo mtpfs -o allow_other /media/MTPdevice
+
+sudo apt-get install zlib1g-dev
+cpan install XML::LibXML
